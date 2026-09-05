@@ -27,7 +27,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org"
+          # Deliberately no registry-url: setup-node would write an .npmrc containing an
+          # _authToken placeholder, and npm may then attempt token auth instead of the OIDC
+          # exchange. The default registry is registry.npmjs.org anyway.
       - name: use an npm that supports OIDC
         run: |
           npm install -g npm@latest
