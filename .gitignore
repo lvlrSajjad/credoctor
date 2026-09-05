@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Local machine description — it names your own trees and accounts.
+# Commit an example, never your real one.
+credkit.json

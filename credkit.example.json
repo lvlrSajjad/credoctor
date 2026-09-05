@@ -1,0 +1,31 @@
+{
+  "trees": [
+    {
+      "name": "work",
+      "path": "~/Coding/WORK",
+      "git": {
+        "name": "you-at-work",
+        "email": "you@work.com"
+      },
+      "signingKey": "ABCD1234...",
+      "sshAlias": "github-work",
+      "sshAccount": "you-at-work",
+      "ghConfigDir": "~/.config/gh-work",
+      "ghAccount": "you-at-work",
+      "browserProfile": "Profile 1"
+    },
+    {
+      "name": "personal",
+      "path": "~/Coding/ME",
+      "git": {
+        "name": "You",
+        "email": "you@gmail.com"
+      },
+      "sshAlias": "github-me",
+      "sshAccount": "you",
+      "ghConfigDir": "~/.config/gh",
+      "ghAccount": "you",
+      "browserProfile": "Default"
+    }
+  ]
+}
