@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';" />
+<title>credkit</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --border: #e2e5ea; --text: #1c1f24; --muted: #6b7280;
+    --pass: #157f3d; --fail: #b3261e; --warn: #8a6100; --skip: #9aa1ab;
+    --pass-bg: #e9f6ee; --fail-bg: #fdeceb; --warn-bg: #fdf3e0; --accent: #2f6feb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --panel: #1c1f26; --border: #2b303a; --text: #e7e9ee; --muted: #9aa1ab;
+      --pass: #4ec97e; --fail: #ff6b60; --warn: #e0ac4b; --skip: #6b7280;
+      --pass-bg: #16281d; --fail-bg: #2c1a19; --warn-bg: #2a2216; --accent: #6f9dff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 2; background: var(--bg);
+    padding: 28px 24px 12px; border-bottom: 1px solid var(--border);
+    -webkit-app-region: drag;
+  }
+  header .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 15px; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  button, label.toggle {
+    -webkit-app-region: no-drag;
+    font: inherit; padding: 5px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  label.toggle { display: inline-flex; align-items: center; gap: 6px; user-select: none; }
+  main { padding: 16px 24px 40px; }
+  .summary { display: flex; gap: 16px; margin: 4px 0 18px; flex-wrap: wrap; }
+  .stat { font-variant-numeric: tabular-nums; }
+  .stat b { font-size: 17px; }
+  .tree {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 11px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .tree > h2 {
+    margin: 0; padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 9px;
+  }
+  .tree > h2 .count { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: auto; }
+  .check { display: grid; grid-template-columns: 62px 172px 1fr; gap: 10px; padding: 7px 14px; align-items: baseline; }
+  .check + .check { border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent); }
+  .badge {
+    font-size: 10.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 5px; text-align: center;
+  }
+  .pass .badge { color: var(--pass); background: var(--pass-bg); }
+  .fail .badge { color: var(--fail); background: var(--fail-bg); }
+  .warn .badge { color: var(--warn); background: var(--warn-bg); }
+  .skip .badge { color: var(--skip); background: transparent; border: 1px solid var(--border); }
+  .name { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+  .detail { word-break: break-word; }
+  .remedy {
+    grid-column: 2 / -1; margin-top: 4px; color: var(--muted); font-size: 12px;
+    border-left: 2px solid var(--border); padding-left: 9px;
+  }
+  .empty, .error { padding: 30px 14px; text-align: center; color: var(--muted); }
+  .error { color: var(--fail); white-space: pre-wrap; text-align: left; font-family: ui-monospace, monospace; font-size: 12px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div>
+      <h1>credkit</h1>
+      <div class="sub" id="sub">Ready</div>
+    </div>
+    <div class="row" style="margin-left:auto">
+      <label class="toggle"><input type="checkbox" id="offline" /> Offline</label>
+      <label class="toggle"><input type="checkbox" id="onlyProblems" /> Problems only</label>
+      <button class="primary" id="run">Run doctor</button>
+    </div>
+  </div>
+</header>
+<main id="out"><div class="empty">Run the doctor to check every tree.</div></main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const ORDER = { fail: 0, warn: 1, pass: 2, skip: 3 };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+function render(res) {
+  const out = $("out");
+  if (!res.ok) {
+    out.innerHTML = `<div class="error">${esc(res.error)}</div>`;
+    $("sub").textContent = "Failed to run";
+    return;
+  }
+  const onlyProblems = $("onlyProblems").checked;
+  const findings = res.findings.filter((f) => !onlyProblems || f.status === "fail" || f.status === "warn");
+  const tally = res.findings.reduce((a, f) => ((a[f.status] = (a[f.status] || 0) + 1), a), {});
+
+  $("sub").textContent = `${esc(res.config)}${res.offline ? " · offline" : ""}`;
+
+  const trees = [...new Set(findings.map((f) => f.tree))];
+  const body = trees.map((tree) => {
+    const rows = findings
+      .filter((f) => f.tree === tree)
+      .sort((a, b) => ORDER[a.status] - ORDER[b.status])
+      .map((f) => `
+        <div class="check ${f.status}">
+          <span class="badge">${f.status}</span>
+          <span class="name">${esc(f.check)}</span>
+          <span class="detail">${esc(f.detail)}</span>
+          ${f.remedy ? `<div class="remedy">${esc(f.remedy)}</div>` : ""}
+        </div>`).join("");
+    const bad = findings.filter((f) => f.tree === tree && (f.status === "fail" || f.status === "warn")).length;
+    return `<section class="tree"><h2>${esc(tree)}<span class="count">${bad ? bad + " to look at" : "all clear"}</span></h2>${rows}</section>`;
+  }).join("");
+
+  out.innerHTML = `
+    <div class="summary">
+      <span class="stat"><b>${tally.pass || 0}</b> passed</span>
+      <span class="stat" style="color:var(--fail)"><b>${tally.fail || 0}</b> failed</span>
+      <span class="stat" style="color:var(--warn)"><b>${tally.warn || 0}</b> warnings</span>
+      <span class="stat" style="color:var(--muted)"><b>${tally.skip || 0}</b> skipped</span>
+    </div>
+    ${body || '<div class="empty">Nothing to show — no problems found.</div>'}`;
+}
+
+let last = null;
+async function run() {
+  const btn = $("run");
+  btn.disabled = true; btn.textContent = "Running…";
+  $("sub").textContent = $("offline").checked ? "Checking (offline)…" : "Checking — this makes real network calls…";
+  try {
+    last = await window.credkit.doctor({ offline: $("offline").checked });
+    render(last);
+  } finally {
+    btn.disabled = false; btn.textContent = "Run doctor";
+  }
+}
+
+$("run").addEventListener("click", run);
+$("onlyProblems").addEventListener("change", () => last && render(last));
+$("offline").addEventListener("change", run);
+run();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { CheckContext, Finding, Tree } from "./types.js";
 import { expand, git, gitConfig, gitLocalConfig, run, tildify, which } from "./sys.js";
 import { findRepos } from "./config.js";
+import { chromeInstalled, chromeProfileDirExists, listChromeProfiles } from "./browser.js";
 
 const pass = (t: Tree, check: string, detail: string): Finding => ({ tree: t.name, check, status: "pass", detail });
 const fail = (t: Tree, check: string, detail: string, remedy: string): Finding => ({ tree: t.name, check, status: "fail", detail, remedy });
@@ -234,6 +235,43 @@ function checkGhOrgs(t: Tree, all: Tree[]): Finding[] {
   return out;
 }
 
+
+/**
+ * A link opened from this tree lands in a browser profile. If that profile is signed in as
+ * a different account, every "review this PR" click authenticates as the wrong person —
+ * a failure that leaves no trace in any git or ssh config.
+ */
+function checkBrowser(t: Tree): Finding[] {
+  if (!t.browserProfile) return [skip(t, "browser-profile", "no browserProfile configured")];
+  if (!chromeInstalled()) return [skip(t, "browser-profile", "Chrome not installed")];
+  if (!chromeProfileDirExists(t.browserProfile)) {
+    return [
+      fail(
+        t,
+        "browser-profile",
+        `Chrome has no profile directory "${t.browserProfile}"`,
+        `Profile directories are names like "Default" or "Profile 1", not the display name. Known: ${listChromeProfiles().map((p) => p.dir).join(", ") || "none"}.`,
+      ),
+    ];
+  }
+  const profile = listChromeProfiles().find((p) => p.dir === t.browserProfile);
+  const expected = t.browserAccount ?? t.git.email;
+  if (!profile?.account) {
+    return [warn(t, "browser-profile", `"${t.browserProfile}" (${profile?.name ?? "?"}) exists but is not signed in`, `Expected ${expected}. Chrome records the account on sign-in; an unsynced profile shows none.`)];
+  }
+  if (profile.account.toLowerCase() !== expected.toLowerCase()) {
+    return [
+      fail(
+        t,
+        "browser-profile",
+        `"${t.browserProfile}" is signed in as ${profile.account}, expected ${expected}`,
+        "Links opened from this tree will authenticate as the wrong account. Point browserProfile at the right directory, or set browserAccount if this profile is intentionally a different address.",
+      ),
+    ];
+  }
+  return [pass(t, "browser-profile", `"${t.browserProfile}" (${profile.name}) signed in as ${profile.account}`)];
+}
+
 /** Two trees sharing a credential means one login can break the other. */
 function checkCollisions(trees: Tree[]): Finding[] {
   const out: Finding[] = [];
@@ -273,6 +311,7 @@ export function runChecks(ctx: CheckContext): Finding[] {
     out.push(...checkLocalOverrides(t));
     out.push(...checkSigning(t));
     out.push(...checkRemotes(t));
+    out.push(...checkBrowser(t));
     if (!ctx.offline) {
       out.push(...checkSsh(t));
       out.push(...checkReachable(t));

@@ -16,6 +16,8 @@ export interface Tree {
   ghAccount?: string;
   /** Chrome `--profile-directory` value for links opened from this tree. */
   browserProfile?: string;
+  /** Account the browser profile should be signed in as. Defaults to git.email. */
+  browserAccount?: string;
   /** Orgs this tree must reach. Trees are also checked against each other's orgs. */
   orgs?: string[];
 }

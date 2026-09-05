@@ -1,18 +1,40 @@
 {
   "name": "credkit",
   "version": "0.1.0",
-  "description": "Verify your per-directory credential domains — git identity, SSH keys, GPG signing, gh accounts — by making real calls instead of trusting config files.",
+  "description": "Verify your per-directory credential domains \u2014 git identity, SSH keys, GPG signing, gh accounts \u2014 by making real calls instead of trusting config files.",
   "type": "module",
-  "bin": { "credkit": "dist/cli.js" },
-  "files": ["dist", "README.md", "DESIGN.md"],
-  "engines": { "node": ">=20" },
+  "bin": {
+    "credkit": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "gui",
+    "README.md",
+    "DESIGN.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "node --experimental-strip-types src/cli.ts",
     "doctor": "npm run build --silent && node dist/cli.js doctor",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gui": "npm run build --silent && electron gui/main.cjs"
   },
-  "keywords": ["git", "identity", "ssh", "gpg", "gh", "multi-account", "credentials"],
+  "keywords": [
+    "git",
+    "identity",
+    "ssh",
+    "gpg",
+    "gh",
+    "multi-account",
+    "credentials"
+  ],
   "license": "MIT",
-  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^20.14.0" }
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "electron": "^41.7.1",
+    "typescript": "^5.6.0"
+  }
 }
