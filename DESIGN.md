@@ -50,16 +50,16 @@ the keychain; that blast radius is not worth taking until the checks are trustwo
 {
   "trees": [
     {
-      "name": "ecotrak",
-      "path": "~/Coding/ET",
-      "git": { "name": "mhatami-ecotrak", "email": "mhatami@ecotrak.com" },
-      "signingKey": "44F6B771F52A3D26",
-      "sshAlias": "github-et",          // Host entry in ~/.ssh/config
-      "sshAccount": "mhatami-ecotrak",   // who GitHub should greet
+      "name": "work",
+      "path": "~/code/work",
+      "git": { "name": "you-at-work", "email": "you@work.example" },
+      "signingKey": "A1B2C3D4E5F60718",
+      "sshAlias": "github-work",          // Host entry in ~/.ssh/config
+      "sshAccount": "you-at-work",   // who GitHub should greet
       "ghConfigDir": "~/.config/gh",
-      "ghAccount": "mhatami-ecotrak",
+      "ghAccount": "you-at-work",
       "browserProfile": "Profile 1",
-      "orgs": ["ecotrakllc"]             // must reach these
+      "orgs": ["workcorp"]             // must reach these
     }
   ]
 }
@@ -105,8 +105,8 @@ the exact button, because that is the step people miss.
 - Not a credential store. It never reads, prints or moves a secret. It asks subsystems
   whether they work.
 - Not a git wrapper. No aliasing `git`; the system stays usable without credkit installed.
-- Not cross-platform on day one. macOS first, because keychain behaviour is the hard part
-  and it is where the interesting failures live. Linux (`libsecret`/`pass`) after.
+- Not a Firefox/Safari reader. The browser check covers the Chromium family, which share
+  one `Local State` format. Other engines need separate work and have not had it.
 
 ## Risks
 

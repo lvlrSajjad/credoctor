@@ -1,7 +1,7 @@
 export interface Tree {
-  /** Short label used in output, e.g. "ecotrak". */
+  /** Short label used in output, e.g. "work". */
   name: string;
-  /** Directory this credential domain covers, e.g. "~/Coding/ET". */
+  /** Directory this credential domain covers, e.g. "~/code/work". */
   path: string;
   git: { name?: string; email: string };
   /** GPG key id/fingerprint expected to sign commits here, if signing is used. */

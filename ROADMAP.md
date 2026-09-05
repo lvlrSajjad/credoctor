@@ -2,30 +2,30 @@
 
 ## Where it is
 
-**v0.1 — read-only, macOS.** The full check catalogue from `DESIGN.md` is implemented and
+**v0.1 — read-only. Linux, macOS and Windows, verified in CI.** The full check catalogue from `DESIGN.md` is implemented and
 runs green against a real 7-tree machine. A CLI (`doctor`, `import`) and an Electron viewer
 over it.
 
 ## Next
 
-**1. Linux support.** Highest priority, and it is a launch blocker rather than a nice-to-have:
-a large share of the audience for a git-credentials tool is on Linux, and "macOS only" is the
-first comment you will get. Needs `libsecret`/`pass` in place of Keychain, and Chrome/Chromium
-profile paths under `~/.config/google-chrome`.
+**~~1. Linux support.~~ Done.** Chromium-family profile roots resolve per platform
+(XDG/snap/flatpak on Linux, LOCALAPPDATA on Windows), binary lookup no longer assumes
+`/usr/bin/which`, and CI runs the functional smoke test on ubuntu, macos and windows across
+node 20 and 22.
 
-**2. Packaging.** `npx credkit doctor` has to work without cloning. Publish to npm; ship the
+**1. Packaging.** `npx credkit doctor` has to work without cloning. Publish to npm; ship the
 GUI as a signed `.dmg`/AppImage separately, since most people will only ever want the CLI.
 
-**3. Non-GitHub hosts.** Bitbucket and GitLab remotes are detected but their auth is not
+**2. Non-GitHub hosts.** Bitbucket and GitLab remotes are detected but their auth is not
 understood — today they surface as a generic reachability failure. GitLab has an equivalent
 of the SSO-authorization trap worth modelling.
 
-**4. Provisioning (`credkit add`, `credkit apply`).** The feature people will ask for first
+**3. Provisioning (`credkit add`, `credkit apply`).** The feature people will ask for first
 and the one most able to damage a working setup. Requirements before it ships: back up every
 file it touches, be idempotent, print a diff and require confirmation, and never touch the
 keychain without an explicit flag. Deliberately last.
 
-**5. Shell integration.** An optional `cd` hook that warns when you enter a tree whose domain
+**4. Shell integration.** An optional `cd` hook that warns when you enter a tree whose domain
 is failing — the check you want *before* you commit, not after.
 
 ## Launch

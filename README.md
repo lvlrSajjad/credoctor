@@ -1,5 +1,7 @@
 # credkit
 
+[![ci](https://github.com/lvlrSajjad/credkit/actions/workflows/ci.yml/badge.svg)](https://github.com/lvlrSajjad/credkit/actions/workflows/ci.yml)
+
 **Prove your git credentials are actually correct — don't just read the config files.**
 
 If you work for more than one organisation from one machine, every commit, push, API call
@@ -29,19 +31,18 @@ browser profile) plus the remote-side state no local file records.
 ## Install
 
 ```sh
-git clone https://github.com/lvlrSajjad/credkit && cd credkit
-npm install && npm run build
+npx credkit doctor
 ```
 
-Requires Node 20+. macOS first; Linux support is planned.
+Nothing to clone. Requires Node 20+. Tested on Linux, macOS and Windows in CI.
 
 ## Use
 
 ```sh
-node dist/cli.js import --write credkit.json   # draft config from your existing includeIf blocks
-node dist/cli.js doctor                        # check every tree
-node dist/cli.js doctor --offline              # skip network checks
-node dist/cli.js doctor --json                 # machine-readable
+npx credkit import --write credkit.json   # draft config from your existing includeIf blocks
+npx credkit doctor                        # check every tree
+npx credkit doctor --offline              # local checks only, no network
+npx credkit doctor --json                 # machine-readable
 ```
 
 `import` reads the `includeIf` blocks already in your `~/.gitconfig` and infers each tree's
@@ -53,15 +54,15 @@ config describing a machine you already set up.
 ```
 credkit doctor — 7 tree(s), config ./credkit.json
 
-  RZT
-    pass  identity             sasadi-reztechfund <sasadi@reztechfund.com>
+  client
+    pass  identity             you-at-client <you@client.example>
     pass  no-local-override    no repo overrides the tree identity
-    pass  signing-key-email    key F236DD79… is bound to sasadi@reztechfund.com
-    pass  remote-alias         6 repo(s) all use git@github-rzt
-    pass  ssh-identity         greeted as sasadi-reztechfund
-    pass  remote-reachable     ~/Coding/RZT/yeschef-project reachable
-    pass  gh-account           sasadi-reztechfund (~/.config/gh-rzt)
-    pass  gh-org-access        reaches 6 repo(s), e.g. reztechfund/yeschef-project
+    pass  signing-key-email    key 9F0E1D2C… is bound to you@client.example
+    pass  remote-alias         6 repo(s) all use git@github-client
+    pass  ssh-identity         greeted as you-at-client
+    pass  remote-reachable     ~/code/client/platform reachable
+    pass  gh-account           you-at-client (~/.config/gh-client)
+    pass  gh-org-access        reaches 6 repo(s), e.g. clientco/platform
     pass  gh-org-isolation     denied all 10 repo(s) belonging to other trees
 ```
 
@@ -85,8 +86,9 @@ Full catalogue, and the real-world failure each check exists to catch, in
 apply`) writes to `~/.gitconfig`, `~/.ssh/config` and the keychain — that blast radius isn't
 worth taking until the checks have earned trust.
 
-Known gaps: browser-profile mapping isn't verified yet; non-GitHub hosts (Bitbucket,
-GitLab) are detected but their auth isn't understood; Linux keyring support is missing.
+Known gaps: non-GitHub hosts (Bitbucket, GitLab) are detected but their auth isn't
+understood, so they surface as a generic reachability failure. Browser checks cover the
+Chromium family (Chrome, Chromium, Edge, Brave) — Firefox and Safari aren't read yet.
 
 ## Design notes
 
@@ -97,7 +99,8 @@ That mistake cost an afternoon and produced a confidently wrong diagnosis; it's 
 a correctness requirement in `src/sys.ts`.
 
 `credkit.json` is gitignored — it names your trees and accounts. It holds no secrets, and
-credkit never reads, prints or moves one.
+credkit never reads, prints or moves one. Every example in this repo is fictional for the
+same reason: a config describing real trees correlates your employers with each other.
 
 ## License
 
