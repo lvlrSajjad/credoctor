@@ -1,7 +1,7 @@
 {
   "name": "credoctor",
-  "version": "0.1.0",
-  "description": "Verify your per-directory credential domains \u2014 git identity, SSH keys, GPG signing, gh accounts \u2014 by making real calls instead of trusting config files.",
+  "version": "0.1.1",
+  "description": "Verify your per-directory credential domains — git identity, SSH keys, GPG signing, gh accounts — by making real calls instead of trusting config files.",
   "type": "module",
   "bin": {
     "credoctor": "dist/cli.js"
