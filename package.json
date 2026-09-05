@@ -7,13 +7,14 @@
     "credoctor": "dist/cli.js"
   },
   "files": [
-    "dist",
-    "gui",
-    "README.md",
     "DESIGN.md",
-    "ROADMAP.md",
     "LICENSE",
-    "credoctor.example.json"
+    "README.md",
+    "RELEASING.md",
+    "ROADMAP.md",
+    "credoctor.example.json",
+    "dist",
+    "gui"
   ],
   "engines": {
     "node": ">=20"

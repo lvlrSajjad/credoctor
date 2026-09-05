@@ -1,0 +1,61 @@
+name: publish
+
+# Trusted publishing: npm authenticates this workflow via OIDC, so there is no token
+# stored in the repository and nothing to leak or rotate. The trade-off is that the
+# configuration on npmjs.com must match this file exactly — see RELEASING.md.
+#
+# Publishing is driven by a tag so the released artifact is tied to a specific commit:
+#   npm version patch && git push --follow-tags
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required: lets the runner mint the OIDC token npm exchanges
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 22.14+ and npm 11.5.1+ are hard requirements for trusted publishing.
+      # setup-node ships an older npm with Node 22, so it is upgraded explicitly.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - name: use an npm that supports OIDC
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+
+      # Publishing a build that was never checked is how a broken release happens.
+      # prepublishOnly runs these too; running them here fails the job earlier and louder.
+      - run: npm run typecheck
+      - run: npm run build
+      - run: node scripts/smoke.mjs
+
+      # A tag that disagrees with package.json means one of them is wrong, and guessing
+      # which produces a published version nobody can reproduce from a tag.
+      - name: tag must match package.json version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag v$tag does not match package.json version $pkg"
+            exit 1
+          fi
+          echo "tag and package.json agree on $pkg"
+
+      # No NODE_AUTH_TOKEN. npm detects the OIDC environment and exchanges it for a
+      # short-lived publish token. Provenance is attached automatically for public repos.
+      - run: npm publish
