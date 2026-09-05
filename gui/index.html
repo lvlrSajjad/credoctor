@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';" />
-<title>credkit</title>
+<title>credoctor</title>
 <style>
   :root {
     --bg: #f6f7f9; --panel: #fff; --border: #e2e5ea; --text: #1c1f24; --muted: #6b7280;
@@ -77,7 +77,7 @@
 <header>
   <div class="row">
     <div>
-      <h1>credkit</h1>
+      <h1>credoctor</h1>
       <div class="sub" id="sub">Ready</div>
     </div>
     <div class="row" style="margin-left:auto">
@@ -139,7 +139,7 @@ async function run() {
   btn.disabled = true; btn.textContent = "Running…";
   $("sub").textContent = $("offline").checked ? "Checking (offline)…" : "Checking — this makes real network calls…";
   try {
-    last = await window.credkit.doctor({ offline: $("offline").checked });
+    last = await window.credoctor.doctor({ offline: $("offline").checked });
     render(last);
   } finally {
     btn.disabled = false; btn.textContent = "Run doctor";

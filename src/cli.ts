@@ -7,7 +7,7 @@ import { runChecks } from "./checks.js";
 import { Finding } from "./types.js";
 import { expand, tildify } from "./sys.js";
 
-const DEFAULT_PATHS = ["./credkit.json", join(homedir(), ".config/credkit/config.json")];
+const DEFAULT_PATHS = ["./credoctor.json", join(homedir(), ".config/credoctor/config.json")];
 
 const COLOR = process.stdout.isTTY && !process.env.NO_COLOR;
 const ESC = "\u001b";
@@ -26,15 +26,15 @@ function resolveConfigPath(explicit?: string): string | null {
 }
 
 function usage(): void {
-  console.log(`credkit — verify your per-directory credential domains
+  console.log(`credoctor — verify your per-directory credential domains
 
-  credkit doctor [--config <path>] [--offline] [--json]
+  credoctor doctor [--config <path>] [--offline] [--json]
       Check every configured tree: git identity, local overrides, signing key,
       remote alias, SSH identity, real reachability, gh account and org access.
       Exits non-zero if anything fails.
 
-  credkit import [--write <path>]
-      Draft a credkit.json from the includeIf blocks already in ~/.gitconfig.
+  credoctor import [--write <path>]
+      Draft a credoctor.json from the includeIf blocks already in ~/.gitconfig.
 
   --offline   skip every check that makes a network call
   --json      machine-readable output`);
@@ -43,7 +43,7 @@ function usage(): void {
 function doctor(configPath: string | null, offline: boolean, json: boolean): number {
   if (!configPath) {
     console.error(`No config found. Looked in: ${DEFAULT_PATHS.join(", ")}`);
-    console.error(`Run \`credkit import\` to draft one from this machine.`);
+    console.error(`Run \`credoctor import\` to draft one from this machine.`);
     return 2;
   }
   const config = loadConfig(configPath);
@@ -52,7 +52,7 @@ function doctor(configPath: string | null, offline: boolean, json: boolean): num
   if (json) {
     console.log(JSON.stringify({ config: tildify(configPath), offline, findings }, null, 2));
   } else {
-    console.log(`credkit doctor — ${config.trees.length} tree(s), config ${tildify(configPath)}${offline ? " (offline)" : ""}\n`);
+    console.log(`credoctor doctor — ${config.trees.length} tree(s), config ${tildify(configPath)}${offline ? " (offline)" : ""}\n`);
     let current = "";
     for (const f of findings) {
       if (f.tree !== current) {
@@ -76,7 +76,7 @@ function doImport(writePath?: string): number {
   const { config, ghStores, notes } = importFromMachine();
   if (!config.trees.length) {
     console.error("No includeIf blocks found in ~/.gitconfig — nothing to import.");
-    console.error("credkit assumes per-directory identities. See DESIGN.md for the shape it expects.");
+    console.error("credoctor assumes per-directory identities. See DESIGN.md for the shape it expects.");
     return 2;
   }
   if (writePath) {
@@ -95,14 +95,19 @@ function doImport(writePath?: string): number {
 
 function main(): void {
   const argv = process.argv.slice(2);
-  const cmd = argv[0];
+  // A leading flag means no command was given: `credoctor --offline` is the doctor with
+  // a flag, not an attempt to run a command called "--offline".
+  const cmd = argv[0]?.startsWith("-") ? undefined : argv[0];
   const flag = (name: string) => argv.includes(`--${name}`);
   const value = (name: string) => {
     const i = argv.indexOf(`--${name}`);
     return i >= 0 ? argv[i + 1] : undefined;
   };
 
-  if (!cmd || flag("help") || cmd === "help") return usage();
+  if (flag("help") || cmd === "help") return usage();
+  // Bare `credoctor` runs the doctor: it is the whole point of the tool, and making
+  // people type `credoctor doctor` is a redundancy nobody thanks you for.
+  if (!cmd) process.exit(doctor(resolveConfigPath(value("config")), flag("offline"), flag("json")));
 
   switch (cmd) {
     case "doctor":

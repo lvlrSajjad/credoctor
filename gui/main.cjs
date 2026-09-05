@@ -1,6 +1,6 @@
 // Electron main process.
 //
-// It owns exactly one privileged capability: running the credkit CLI and handing its JSON
+// It owns exactly one privileged capability: running the credoctor CLI and handing its JSON
 // to the renderer. The renderer has no Node access — see preload.cjs. Keeping the split
 // this sharp means the GUI can never do something the CLI cannot, which is what makes the
 // CLI the real product and this a viewer.
@@ -37,7 +37,7 @@ function createWindow() {
 }
 
 /**
- * Run `credkit doctor --json`.
+ * Run `credoctor doctor --json`.
  *
  * execFile, not exec: no shell, so nothing in the user's shell config can intercept the
  * call or reinterpret arguments. Same reason the CLI itself avoids shells.
@@ -61,8 +61,8 @@ function runDoctor({ offline, configPath }) {
   });
 }
 
-ipcMain.handle("credkit:doctor", (_e, opts) => runDoctor(opts ?? {}));
-ipcMain.handle("credkit:openExternal", (_e, url) => {
+ipcMain.handle("credoctor:doctor", (_e, opts) => runDoctor(opts ?? {}));
+ipcMain.handle("credoctor:openExternal", (_e, url) => {
   if (/^https?:\/\//.test(url)) shell.openExternal(url);
 });
 

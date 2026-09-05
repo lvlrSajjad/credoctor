@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           npm pack --silent
-          tarball=$(ls credkit-*.tgz)
+          tarball=$(ls credoctor-*.tgz)
           mkdir -p /tmp/consumer && cd /tmp/consumer && npm init -y >/dev/null
           npm install --silent "$OLDPWD/$tarball"
-          ./node_modules/.bin/credkit --help
+          ./node_modules/.bin/credoctor --help

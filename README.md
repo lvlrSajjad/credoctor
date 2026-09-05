@@ -1,6 +1,6 @@
-# credkit
+# credoctor
 
-[![ci](https://github.com/lvlrSajjad/credkit/actions/workflows/ci.yml/badge.svg)](https://github.com/lvlrSajjad/credkit/actions/workflows/ci.yml)
+[![ci](https://github.com/lvlrSajjad/credoctor/actions/workflows/ci.yml/badge.svg)](https://github.com/lvlrSajjad/credoctor/actions/workflows/ci.yml)
 
 **Prove your git credentials are actually correct — don't just read the config files.**
 
@@ -9,7 +9,7 @@ and browser login has to happen as the right identity. `includeIf` in `~/.gitcon
 part of that, and [gitch](https://github.com/orzazade/gitch) and
 [bgit](https://github.com/byterings/bgit) handle more of it.
 
-credkit exists for the part none of them cover: **verifying that the whole thing works**.
+credoctor exists for the part none of them cover: **verifying that the whole thing works**.
 
 ## Why config inspection isn't enough
 
@@ -31,7 +31,7 @@ browser profile) plus the remote-side state no local file records.
 ## Install
 
 ```sh
-npx credkit doctor
+npx credoctor doctor
 ```
 
 Nothing to clone. Requires Node 20+. Tested on Linux, macOS and Windows in CI.
@@ -39,10 +39,10 @@ Nothing to clone. Requires Node 20+. Tested on Linux, macOS and Windows in CI.
 ## Use
 
 ```sh
-npx credkit import --write credkit.json   # draft config from your existing includeIf blocks
-npx credkit doctor                        # check every tree
-npx credkit doctor --offline              # local checks only, no network
-npx credkit doctor --json                 # machine-readable
+npx credoctor import --write credoctor.json   # draft config from your existing includeIf blocks
+npx credoctor doctor                        # check every tree
+npx credoctor doctor --offline              # local checks only, no network
+npx credoctor doctor --json                 # machine-readable
 ```
 
 `import` reads the `includeIf` blocks already in your `~/.gitconfig` and infers each tree's
@@ -52,7 +52,7 @@ config describing a machine you already set up.
 `doctor` exits non-zero on any failure, so it fits in a shell hook or CI.
 
 ```
-credkit doctor — 7 tree(s), config ./credkit.json
+credoctor doctor — 7 tree(s), config ./credoctor.json
 
   client
     pass  identity             you-at-client <you@client.example>
@@ -82,7 +82,7 @@ Full catalogue, and the real-world failure each check exists to catch, in
 
 ## Status
 
-**v0.1, read-only.** `doctor` and `import` only. Provisioning (`credkit add`, `credkit
+**v0.1, read-only.** `doctor` and `import` only. Provisioning (`credoctor add`, `credoctor
 apply`) writes to `~/.gitconfig`, `~/.ssh/config` and the keychain — that blast radius isn't
 worth taking until the checks have earned trust.
 
@@ -92,14 +92,14 @@ Chromium family (Chrome, Chromium, Edge, Brave) — Firefox and Safari aren't re
 
 ## Design notes
 
-credkit invokes binaries **directly, never through a shell**. A `gh()` wrapper function
-that forces `GH_CONFIG_DIR` from `$PWD` will otherwise override the environment credkit
+credoctor invokes binaries **directly, never through a shell**. A `gh()` wrapper function
+that forces `GH_CONFIG_DIR` from `$PWD` will otherwise override the environment credoctor
 sets, and every reading describes the shell's opinion instead of the store you asked about.
 That mistake cost an afternoon and produced a confidently wrong diagnosis; it's encoded as
 a correctness requirement in `src/sys.ts`.
 
-`credkit.json` is gitignored — it names your trees and accounts. It holds no secrets, and
-credkit never reads, prints or moves one. Every example in this repo is fictional for the
+`credoctor.json` is gitignored — it names your trees and accounts. It holds no secrets, and
+credoctor never reads, prints or moves one. Every example in this repo is fictional for the
 same reason: a config describing real trees correlates your employers with each other.
 
 ## License

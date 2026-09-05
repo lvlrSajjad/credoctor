@@ -5,7 +5,7 @@ dist/
 
 # Local machine description — it names your own trees and accounts.
 # Commit an example, never your real one.
-credkit.json
+credoctor.json
 
 # Electron build output
 out/

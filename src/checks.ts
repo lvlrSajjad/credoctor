@@ -17,7 +17,7 @@ function anyRepo(t: Tree): string | null {
 
 function checkIdentity(t: Tree): Finding[] {
   const dir = expand(t.path);
-  if (!existsSync(dir)) return [fail(t, "tree-exists", `${t.path} does not exist`, "Fix the path in credkit.json, or create the tree.")];
+  if (!existsSync(dir)) return [fail(t, "tree-exists", `${t.path} does not exist`, "Fix the path in credoctor.json, or create the tree.")];
   const repo = anyRepo(t);
   if (!repo) return [skip(t, "identity", `no git repo under ${t.path} yet`)];
 
@@ -150,7 +150,7 @@ function checkReachable(t: Tree): Finding[] {
   const url = git(repo, "ls-remote", "--get-url", "origin").stdout;
   const remedy = /github\.com|github-/.test(url)
     ? "Confirm the key is registered on the expected account and has access to this repository."
-    : `Not a GitHub remote (${url.replace(/^https:\/\/[^@]*@/, "https://")}) — check that host's own credentials; credkit only understands GitHub auth today.`;
+    : `Not a GitHub remote (${url.replace(/^https:\/\/[^@]*@/, "https://")}) — check that host's own credentials; credoctor only understands GitHub auth today.`;
   return [fail(t, "remote-reachable", err.split("\n").find(Boolean) ?? "ls-remote failed", remedy)];
 }
 

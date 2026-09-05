@@ -1,4 +1,4 @@
-# credkit — design
+# credoctor — design
 
 ## The problem this exists for
 
@@ -27,16 +27,16 @@ that must agree for one directory tree — git identity, SSH key, GPG signing ke
 account, browser profile — plus the remote-side state (SSO authorization, org membership)
 that no local file records.
 
-**credkit's thesis: verify reality, not configuration.** Reading config tells you what
+**credoctor's thesis: verify reality, not configuration.** Reading config tells you what
 should happen. Only a real call tells you what does.
 
 ## Shape
 
 ```
-credkit doctor          # read-only: prove every tree's domain is actually correct
-credkit import          # bootstrap credkit.json from what is already on this machine
-credkit add <tree>      # (v2) provision a new tree across all subsystems in one transaction
-credkit apply           # (v2) make the machine match credkit.json
+credoctor doctor          # read-only: prove every tree's domain is actually correct
+credoctor import          # bootstrap credoctor.json from what is already on this machine
+credoctor add <tree>      # (v2) provision a new tree across all subsystems in one transaction
+credoctor apply           # (v2) make the machine match credoctor.json
 ```
 
 v1 is `doctor` + `import` only. Provisioning writes to `~/.gitconfig`, `~/.ssh/config` and
@@ -44,7 +44,7 @@ the keychain; that blast radius is not worth taking until the checks are trustwo
 
 ### Config
 
-`credkit.json` (repo-local, or `~/.config/credkit/config.json`) describes each tree:
+`credoctor.json` (repo-local, or `~/.config/credoctor/config.json`) describes each tree:
 
 ```jsonc
 {
@@ -65,7 +65,7 @@ the keychain; that blast radius is not worth taking until the checks are trustwo
 }
 ```
 
-`credkit import` writes a first draft of this by reading the `includeIf` blocks already in
+`credoctor import` writes a first draft of this by reading the `includeIf` blocks already in
 `~/.gitconfig`, the files they point at, `~/.ssh/config`, and `~/.config/gh*/hosts.yml`.
 Nobody should have to hand-write it.
 
@@ -104,7 +104,7 @@ the exact button, because that is the step people miss.
 
 - Not a credential store. It never reads, prints or moves a secret. It asks subsystems
   whether they work.
-- Not a git wrapper. No aliasing `git`; the system stays usable without credkit installed.
+- Not a git wrapper. No aliasing `git`; the system stays usable without credoctor installed.
 - Not a Firefox/Safari reader. The browser check covers the Chromium family, which share
   one `Local State` format. Other engines need separate work and have not had it.
 
@@ -115,6 +115,6 @@ the exact button, because that is the step people miss.
 - **Destructive writes** in v2. Any mutation must back up first, be idempotent, and print a
   diff for confirmation. This is why v1 is read-only.
 - **Shell-function interception.** A `gh` wrapper function can override an explicitly
-  passed `GH_CONFIG_DIR`, so credkit must invoke the real binary directly rather than
+  passed `GH_CONFIG_DIR`, so credoctor must invoke the real binary directly rather than
   through the user's shell. This one cost an afternoon and a wrong diagnosis; it is a
   correctness requirement, not a detail.

@@ -23,7 +23,7 @@ const check = (label, cond, extra = "") => {
   if (!cond) failures++;
 };
 
-const tmp = mkdtempSync(join(tmpdir(), "credkit-smoke-"));
+const tmp = mkdtempSync(join(tmpdir(), "credoctor-smoke-"));
 const treeDir = join(tmp, "work");
 const repoDir = join(treeDir, "example");
 mkdirSync(repoDir, { recursive: true });
@@ -34,7 +34,7 @@ git("remote", "add", "origin", "git@github-work:acme/example.git");
 git("config", "--local", "user.name", "Work Person");
 git("config", "--local", "user.email", "person@work.example");
 
-const configPath = join(tmp, "credkit.json");
+const configPath = join(tmp, "credoctor.json");
 const writeConfig = (email) =>
   writeFileSync(
     configPath,
@@ -64,7 +64,7 @@ const doctor = () => {
   return { code: r.status, json, stderr: r.stderr };
 };
 
-console.log(`credkit smoke test  (node ${process.version}, ${process.platform})\n`);
+console.log(`credoctor smoke test  (node ${process.version}, ${process.platform})\n`);
 
 // --- 1. A correct tree passes -------------------------------------------------------
 writeConfig("person@work.example");

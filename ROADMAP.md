@@ -13,14 +13,14 @@ over it.
 `/usr/bin/which`, and CI runs the functional smoke test on ubuntu, macos and windows across
 node 20 and 22.
 
-**1. Packaging.** `npx credkit doctor` has to work without cloning. Publish to npm; ship the
+**1. Packaging.** `npx credoctor doctor` has to work without cloning. Publish to npm; ship the
 GUI as a signed `.dmg`/AppImage separately, since most people will only ever want the CLI.
 
 **2. Non-GitHub hosts.** Bitbucket and GitLab remotes are detected but their auth is not
 understood — today they surface as a generic reachability failure. GitLab has an equivalent
 of the SSO-authorization trap worth modelling.
 
-**3. Provisioning (`credkit add`, `credkit apply`).** The feature people will ask for first
+**3. Provisioning (`credoctor add`, `credoctor apply`).** The feature people will ask for first
 and the one most able to damage a working setup. Requirements before it ships: back up every
 file it touches, be idempotent, print a diff and require confirmation, and never touch the
 keychain without an explicit flag. Deliberately last.
@@ -32,7 +32,7 @@ is failing — the check you want *before* you commit, not after.
 
 Two things have to be true before promoting it, and neither is negotiable:
 
-- **It works in under a minute for a stranger.** `npx credkit doctor` on a machine that has
+- **It works in under a minute for a stranger.** `npx credoctor doctor` on a machine that has
   never seen it, no clone, no build.
 - **It is honest about gaps.** The README already lists them. Keep that section; it is the
   difference between a tool people trust and one they bounce off when the first thing fails.

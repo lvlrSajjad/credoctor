@@ -28,7 +28,7 @@ export interface RunResult {
  *
  * This is deliberate and load-bearing. A user's shell may define a function that shadows
  * the binary — a `gh()` wrapper that forces `GH_CONFIG_DIR` from `$PWD`, for instance.
- * Going through a shell would let that wrapper silently override the environment credkit
+ * Going through a shell would let that wrapper silently override the environment credoctor
  * sets, and every reading would describe the shell's opinion rather than the store we
  * asked about. Diagnosing that mistake once was expensive; do not reintroduce it by
  * switching this to `shell: true`.
