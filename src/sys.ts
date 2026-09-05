@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, accessSync, constants as fsConstants } from "node:fs";
 import { homedir } from "node:os";
 import { join, isAbsolute } from "node:path";
 
@@ -75,9 +75,26 @@ export function isGitRepo(dir: string): boolean {
   return existsSync(join(dir, ".git"));
 }
 
+/**
+ * Resolve a binary on PATH without invoking a shell or assuming /usr/bin/which exists
+ * (it does not on every Linux image, and Windows has no `which` at all).
+ */
 export function which(bin: string): string | null {
-  const r = run("/usr/bin/which", [bin]);
-  return r.ok && r.stdout ? r.stdout.split("\n")[0] : null;
+  const path = process.env.PATH ?? "";
+  const sep = process.platform === "win32" ? ";" : ":";
+  const exts = process.platform === "win32" ? (process.env.PATHEXT ?? ".EXE;.CMD;.BAT").split(";") : [""];
+  for (const dir of path.split(sep).filter(Boolean)) {
+    for (const ext of exts) {
+      const candidate = join(dir, bin + ext.toLowerCase());
+      try {
+        accessSync(candidate, fsConstants.X_OK);
+        return candidate;
+      } catch {
+        /* keep looking */
+      }
+    }
+  }
+  return null;
 }
 
 export function abs(p: string): string {
