@@ -60,4 +60,15 @@ jobs:
 
       # No NODE_AUTH_TOKEN. npm detects the OIDC environment and exchanges it for a
       # short-lived publish token. Provenance is attached automatically for public repos.
-      - run: npm publish
+      #
+      # When that exchange fails npm says nothing about it at the default loglevel: the whole
+      # symptom is a bare ENEEDAUTH, which reads as "no token" and hides whether the registry
+      # refused the exchange, or npm never attempted one. Retrying verbose on failure puts the
+      # registry's actual answer in the log, so the next person fixes the trusted publisher
+      # instead of guessing at it. The happy path stays quiet, and on the failing path no
+      # publish token was ever minted, so there is nothing in that output to leak.
+      - name: publish
+        run: |
+          if npm publish; then exit 0; fi
+          echo "::error::npm publish failed — retrying verbose to capture why"
+          npm publish --loglevel verbose
